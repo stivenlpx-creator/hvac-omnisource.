@@ -21,7 +21,7 @@ if st.button("ANALIZAR CON IA"):
         with st.spinner("🧠 Consultando cerebro de IA..."):
             try:
                 # Cambiamos a 'models/gemini-1.5-flash' para asegurar compatibilidad
-                model = genai.GenerativeModel('models/gemini-1.5-flash')
+                model = genai.GenerativeModel('models/gemini-1.0-pro')
                 response = model.generate_content(pregunta)
                 
                 st.success("### DIAGNÓSTICO:")
