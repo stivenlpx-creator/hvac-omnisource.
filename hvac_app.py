@@ -4,7 +4,7 @@ import google.generativeai as genai
 # Configuración de página
 st.set_page_config(page_title="HVAC PRO", layout="wide")
 
-# Llave de API
+# Llave de API (Recuerda protegerla después con st.secrets)
 API_KEY = "AIzaSyC0-1YsWu9A_xwMu-UflXzkZrn-IFk9Wf0"
 
 # Configuración global de la IA
@@ -20,16 +20,19 @@ if st.button("ANALIZAR CON IA"):
     if pregunta:
         with st.spinner("🧠 Consultando cerebro de IA..."):
             try:
-                # Cambiamos a 'models/gemini-1.5-flash' para asegurar compatibilidad
-                model = genai.GenerativeModel('models/gemini-1.0-pro')
-                response = model.generate_content(pregunta)
+                # Se utiliza gemini-1.5-flash por ser más estable y rápido
+                model = genai.GenerativeModel('gemini-1.5-flash')
+                
+                # Opcional: Puedes agregar un "prompt" de sistema para que sea más técnico
+                prompt_ingeniero = f"Actúa como un experto en refrigeración y HVAC. Responde a lo siguiente: {pregunta}"
+                
+                response = model.generate_content(prompt_ingeniero)
                 
                 st.success("### DIAGNÓSTICO:")
                 st.write(response.text)
             except Exception as e:
-                # Si falla el 1.5 flash, intentamos con el modelo pro por si acaso
                 st.error(f"Error detectado: {e}")
-                st.info("Intentando reconexión con nodo alterno...")
+                st.info("Sugerencia: Verifica que tu API Key esté activa y que la librería 'google-generativeai' esté actualizada.")
     else:
         st.warning("Por favor, ingresa una consulta.")
 
@@ -42,6 +45,7 @@ with c1:
     ts = st.number_input("Temp Succión (°C)", value=10, step=1)
     pb = st.number_input("Presión Baja (PSI)", value=118, step=1)
     # Cálculo de Superheat (SH) simplificado
+    # Nota: Esta es una fórmula aproximada para R410A
     sh = int(round(ts - ((pb / 10) - 7)))
     st.metric("SH (Sobrecalentamiento)", f"{sh} °C")
     if 4 <= sh <= 7: 
