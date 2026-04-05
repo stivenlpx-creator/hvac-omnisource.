@@ -1,44 +1,37 @@
 import streamlit as st
 import google.generativeai as genai
 
-# 1. Configuración de la App
+# Configuración de página
 st.set_page_config(page_title="HVAC PRO", layout="wide")
 
-# 2. IA con tu Key (La que funciona en Google Studio)
+# Llave que probamos y funciona
 API_KEY = "AIzaSyC0-1YsWu9A_xwMu-UflXzkZrn-IFk9Wf0"
 
-def conectar_ia():
-    try:
-        genai.configure(api_key=API_KEY)
-        # Cambiamos a 'gemini-pro', es el modelo más estable para conexiones antiguas
-        return genai.GenerativeModel('gemini-pro')
-    except Exception as e:
-        return None
+# Inicializar IA
+try:
+    genai.configure(api_key=API_KEY)
+    # Usamos el modelo más moderno pero de forma simplificada
+    model = genai.GenerativeModel('gemini-1.5-flash')
+except Exception as e:
+    st.error(f"Error de sistema: {e}")
 
-model = conectar_ia()
-
-# 3. Interfaz
 st.title("⚡ HVAC PRO DIAGNOSTIC ❄️")
-st.write("Soporte de Ingeniería - OMNISOURCE")
-st.divider()
+st.write("Soporte OMNISOURCE")
 
-# BUSCADOR
-st.header("🔍 Asistente Técnico IA")
+# Buscador
 pregunta = st.text_input("Consulta técnica:", placeholder="Ej: R410A")
 
-if st.button("ANALIZAR CON IA", use_container_width=True):
-    if pregunta and model:
+if st.button("ANALIZAR CON IA"):
+    if pregunta:
         with st.spinner("🧠 Consultando..."):
             try:
-                # Usamos una llamada más simple para evitar el error v1beta
                 response = model.generate_content(pregunta)
-                st.success("### 🛠️ DIAGNÓSTICO:")
+                st.success("### DIAGNÓSTICO:")
                 st.write(response.text)
             except Exception as e:
-                st.error("⚠️ Error de sistema.")
-                st.code(str(e)) # Esto nos dirá si sigue pidiendo v1beta
+                st.error(f"Error: {e}")
 
-# CALCULADORAS
+# Calculadoras (Enteros)
 st.divider()
 st.subheader("🧮 Eficiencia (Valores Enteros)")
 c1, c2 = st.columns(2)
@@ -48,13 +41,13 @@ with c1:
     pb = st.number_input("Presión Baja (PSI)", value=118, step=1)
     sh = int(round(ts - ((pb / 10) - 7)))
     st.metric("SH", f"{sh} °C")
-    if 4 <= sh <= 7: st.success("✅ Eficiente (Ideal: 4-7°C)")
-    else: st.warning("⚠️ Fuera de rango")
+    if 4 <= sh <= 7: st.success("✅ Eficiente")
+    else: st.warning("⚠️ Ajustar")
 
 with c2:
     tl = st.number_input("Temp Líquido (°C)", value=32, step=1)
     pa = st.number_input("Presión Alta (PSI)", value=320, step=1)
     sc = int(round(((pa / 10) + 6) - tl))
     st.metric("SC", f"{sc} °C")
-    if 5 <= sc <= 8: st.success("✅ Eficiente (Ideal: 5-8°C)")
-    else: st.warning("⚠️ Fuera de rango")
+    if 5 <= sc <= 8: st.success("✅ Eficiente")
+    else: st.warning("⚠️ Revisar")
