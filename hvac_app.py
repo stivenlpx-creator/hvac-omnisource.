@@ -1,77 +1,73 @@
 import streamlit as st
 
-# Configuración de Consola Profesional
-st.set_page_config(page_title="HVAC OMNISOURCE CONSOLE", layout="wide")
+# 1. Configuración de Pantalla
+st.set_page_config(page_title="HVAC OMNISOURCE", layout="wide")
 
-# Estilo de interfaz industrial
+# 2. Estilo Visual
 st.markdown("""
     <style>
-    .main { background-color: #0b0e14; color: #e6edf3; }
-    .stSidebar { background-color: #161b22; border-right: 2px solid #30363d; }
-    h3 { color: #58a6ff; }
-    .metric-card {
-        background-color: #1c2128; padding: 15px; border-radius: 10px;
-        border: 1px solid #444c56; margin-bottom: 10px;
-    }
+    .main { background-color: #0b1016; color: white; }
+    .stSidebar { background-color: #161b22; }
+    .stAlert { background-color: #1c2128; border-radius: 10px; }
     </style>
     """, unsafe_content_allowed=True)
 
-# --- BARRA LATERAL IZQUIERDA ---
-st.sidebar.title("📁 BIBLIOTECA TÉCNICA")
-menu = st.sidebar.radio("SELECCIONE MÓDULO:", 
+# --- BARRA LATERAL (MENÚ) ---
+st.sidebar.title("📁 MENÚ TÉCNICO")
+opcion = st.sidebar.selectbox("Seleccione Módulo:", 
     ["🔍 Diagnóstico de Fallas", "🔌 Datos de Compresores", "🌀 Motores Ventiladores", "🌡️ Tabla de Sensores", "📋 Reporte de Campo"])
 
 st.sidebar.markdown("---")
-st.sidebar.subheader("Manuales por Marca")
-marca_manual = st.sidebar.selectbox("Info Rápida:", ["Mirage", "Midea", "Comfort Fresh", "LG", "Samsung"])
+st.sidebar.info("Marcas Soportadas: Mirage, Midea, Comfort Fresh, Samsung, LG.")
 
-# --- ÁREA PRINCIPAL ---
-st.title(f"🛠️ {menu.upper()}")
+# --- CUERPO PRINCIPAL ---
+st.title(f"🛠️ {opcion.upper()}")
 
-# 1. DIAGNÓSTICO DE FALLAS
-if menu == "🔍 Diagnóstico de Fallas":
-    st.write("Escriba el código de error o el síntoma para obtener el paso a paso.")
-    query = st.text_input("Consulta técnica:", placeholder="Ej: Mirage E1, Midea EC...")
+if opcion == "🔍 Diagnóstico de Fallas":
+    st.write("Escriba la marca y el código (Ej: Mirage E1)")
+    busqueda = st.text_input("Consulta:").lower()
     
-    db_fallas = {
-        "mirage": {
-            "e0": "1. Error EEPROM. \n2. Desenergizar 5 min. \n3. Si persiste, cambiar placa.",
-            "e1": "1. Error Comunicación. \n2. Medir señal en borne S. \n3. Revisar neutro.",
-            "e5": "1. Sensor de Aire (10k). \n2. Revisar resistencia."
-        },
-        "midea": {
-            "ec": "1. Detección de Fuga. \n2. Verificar presión de gas. \n3. Buscar fuga en soldaduras.",
-            "p4": "1. Protección Compresor Inverter. \n2. Revisar IPM."
-        },
-        "comfort fresh": {
-            "e1": "1. Sensor de ambiente defectuoso. \n2. Medir 10k o 5k.",
-            "e4": "1. Protección por baja presión o falta de refrigerante."
-        }
-    }
-    
-    if query:
-        encontrado = False
-        query_l = query.lower()
-        for marca in db_fallas:
-            if marca in query_l:
-                for cod in db_fallas[marca]:
-                    if cod in query_l:
-                        st.info(f"### ✅ {marca.upper()} - {cod.upper()}\n{db_fallas[marca][cod]}")
-                        encontrado = True
-        if not encontrado:
-            st.warning("No se encontró una coincidencia exacta. Pruebe con 'Marca + Código'.")
+    # Lógica simplificada de búsqueda
+    if "mirage" in busqueda and "e1" in busqueda:
+        st.info("✅ MIRAGE E1: Error de comunicación. Revisar cable de señal (S) y voltajes entre N y S.")
+    elif "mirage" in busqueda and "e0" in busqueda:
+        st.info("✅ MIRAGE E0: Error de EEPROM. Resetear equipo o cambiar tarjeta principal.")
+    elif "midea" in busqueda and "ec" in busqueda:
+        st.info("✅ MIDEA EC: Fuga de gas detectada. El equipo se protege por baja presión.")
+    elif "comfort fresh" in busqueda and "e1" in busqueda:
+        st.info("✅ COMFORT FRESH E1: Falla en sensor de aire ambiental (10k).")
+    elif busqueda == "":
+        st.write("Esperando consulta...")
+    else:
+        st.warning("No hay coincidencia exacta. Intente: 'Marca + Código'.")
 
-# 2. DATOS DE COMPRESORES
-elif menu == "🔌 Datos de Compresores":
-    st.markdown("### ⚡ Capacitores y Amperajes Sugeridos")
+elif opcion == "🔌 Datos de Compresores":
+    st.markdown("### ⚡ Capacitores y Bobinas")
     st.table({
-        "BTU": ["9k", "12k", "18k", "24k", "36k"],
-        "Capacitor (µF)": ["25-30", "30-35", "35-45", "50-60", "70-80"],
-        "Amperaje (RLA)": ["3.8A", "5.5A", "8.5A", "11.5A", "16.5A"]
+        "Capacidad BTU": ["9,000", "12,000", "18,000", "24,000"],
+        "Capacitor uF": ["25-30", "30-35", "35-45", "50-60"],
+        "Amperaje RLA": ["4.0 A", "6.0 A", "9.0 A", "12.0 A"]
     })
-    st.info("**Bobinas:** Mida R-S (Suma total), C-R (Marcha), C-S (Arranque).")
+    st.info("Identificación: C (Común), R (Marcha), S (Arranque). Resistencia R a S es la más alta.")
 
-# 3. MOTORES VENTILADORES
-elif menu == "🌀 Motores Ventiladores":
-    st.markdown("###
-                
+elif opcion == "🌀 Motores Ventiladores":
+    st.write("### Diagnóstico de Motores PG y PSC")
+    st.write("1. **Motor PSC:** 3 cables. Mida resistencia entre bobinas.")
+    st.write("2. **Motor PG:** 5-6 cables. Incluye sensor Hall (Rojo, Negro, Blanco).")
+    st.info("Si el motor gira y se detiene marcando error, el sensor Hall está dañado.")
+
+elif opcion == "🌡️ Tabla de Sensores":
+    st.write("### Tabla de Resistencia (kΩ) a 25°C")
+    st.table({
+        "Marca": ["Mirage / Midea", "LG / Samsung", "York / Carrier"],
+        "Sensor Aire": ["10 kΩ", "10 kΩ", "5 kΩ / 10 kΩ"],
+        "Sensor Pozo": ["10 kΩ", "5 kΩ", "10 kΩ"]
+    })
+
+elif opcion == "📋 Reporte de Campo":
+    st.write("### 📝 Datos Tomados")
+    v = st.number_input("Voltaje (V)", 0.0)
+    a = st.number_input("Amperaje (A)", 0.0)
+    if st.button("Analizar"):
+        st.success("Datos registrados correctamente.")
+        
