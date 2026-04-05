@@ -1,86 +1,88 @@
 import streamlit as st
 
 # 1. Configuración de Pantalla
-st.set_page_config(page_title="HVAC OMNISOURCE PRO", layout="wide")
+st.set_page_config(page_title="HVAC OMNISOURCE TOTAL", layout="wide")
 
-# 2. Encabezado
-st.title("❄️ HVAC MASTER PRO - SOPORTE TÉCNICO")
-st.write("Manual de Campo: Mirage, Midea, Comfort Fresh y Genéricos")
+# 2. Encabezado con Estilo
+st.markdown("<h1 style='text-align: center;'>❄️ HVAC MASTER: ENCICLOPEDIA TÉCNICA 🛠️</h1>", unsafe_content_allowed=True)
+st.write("---")
 
 # 3. Motor de Búsqueda Inteligente
+busqueda = st.text_input("🔍 DESCRIBA LA FALLA O CÓDIGO:", placeholder="Ej: No enfría, Se va a vacío, E1, IPM, Compresor...")
+btn_buscar = st.button("🚀 INICIAR DIAGNÓSTICO DE CAMPO")
+
+if busqueda or btn_buscar:
+    q = busqueda.lower()
+    
+    # --- SECCIÓN A: FALLAS MECÁNICAS Y DE CICLO ---
+    
+    if "vacio" in q or "se va a vacio" in q:
+        st.error("### 🛠️ DIAGNÓSTICO: EL SISTEMA SE VA A VACÍO")
+        st.write("1. **Obstrucción por Hielo:** Si el vacío es intermitente, hay humedad. Cambiar filtro y hacer vacío de 500 micrones.")
+        st.write("2. **Filtro Tapado:** Si la entrada está caliente y la salida fría, el filtro deshidratador está obstruido.")
+        st.write("3. **Capilar/VXT:** Si el evaporador solo congela el inicio, el elemento de expansión está semitapado.")
+        st.write("4. **Válvulas:** Verifique que las válvulas de succión y líquido estén abiertas al 100%.")
+
+    elif "no enfria" in q and "bien" in q:
+        st.warning("### 🛠️ DIAGNÓSTICO: ARRANCA, PRESIONES BIEN, PERO NO ENFRÍA")
+        st.write("1. **Compresor Descompresionado:** Mida el amperaje. Si es muy bajo (30-50% del RLA) y las presiones están casi igualadas, las válvulas internas del compresor no bombean.")
+        st.write("2. **Válvula Inversora:** Si es bomba de calor, la válvula de 4 vías puede estar fugando internamente, mezclando succión con descarga.")
+        st.write("3. **Cortocircuito de Aire:** Verifique que el aire caliente de la condensadora no esté recirculando hacia la entrada.")
+
+    elif "no arranca" in q and "compresor" in q:
+        st.error("### 🛠️ DIAGNÓSTICO: COMPRESOR NO ARRANCA")
+        st.write("1. **Capacitor:** Si zumba, el capacitor de marcha está agotado. Probar con un 'Hard Start Kit' si el compresor está pegado.")
+        st.write("2. **Protector Térmico:** Si el compresor está caliente y no marca continuidad, el térmico interno está abierto. Enfriar con agua/aire.")
+        st.write("3. **Bobinado:** Mida continuidad C-R, C-S y R-S. La suma de C-R + C-S debe ser igual a R-S.")
+
+    elif "ventilador" in q or "fan" in q:
+        st.warning("### 🛠️ DIAGNÓSTICO: FALLA EN MOTOR VENTILADOR")
+        st.write("1. **Mecánico:** Si el aspa está dura, los rodamientos/bujes están resecos. Cambiar motor.")
+        st.write("2. **Eléctrico:** Revisar capacitor de fan (generalmente 1.5uF a 6uF).")
+        st.write("3. **Electrónico:** En motores PG, medir 5V DC en el sensor Hall. Si no hay señal, el equipo se apaga por seguridad.")
+
+    # --- SECCIÓN B: CÓDIGOS DE ERROR (MIRAGE, MIDEA, COMFORT) ---
+    
+    elif "e1" in q or "comunicacion" in q:
+        st.info("### 🛠️ FALLA: ERROR DE COMUNICACIÓN (E1)")
+        st.write("1. **Voltaje N-S:** Debe oscilar entre 15V y 70V DC. Si es fijo 0V o 80V, hay falla de placa.")
+        st.write("2. **Cableado:** Revisar que el cable de señal no esté aterrizado o sulfatado.")
+
+    elif "ec" in q or "fuga" in q:
+        st.error("### 🛠️ FALLA: DETECCIÓN DE FUGA (EC)")
+        st.write("1. **Causa:** El sensor de tubería no detecta enfriamiento tras 10 min de marcha.")
+        st.write("2. **Acción:** Presurizar con Nitrógeno a 350 PSI. No cargar gas sin reparar la fuga.")
+
+    else:
+        st.warning("⚠️ No hay coincidencia exacta. Escriba: 'Vacío', 'IPM', 'E1', 'Sensor' o 'No enfría'.")
+
+# --- TABLAS DE INGENIERÍA (SIEMPRE DISPONIBLES) ---
 st.write("---")
-busqueda = st.text_input("¿Qué falla o código presenta el equipo?", placeholder="Ej: Mirage E1, Midea EC, Falla Compresor...")
+st.subheader("📊 TABLAS DE REFERENCIA DE INGENIERÍA")
 
-if st.button("🔍 INICIAR DIAGNÓSTICO"):
-    if busqueda:
-        q = busqueda.lower()
-        
-        # --- SECCIÓN MIRAGE ---
-        if "mirage" in q:
-            if "e1" in q or "comunicacion" in q:
-                st.info("### ✅ MIRAGE E1: ERROR DE COMUNICACIÓN")
-                st.write("1. **Voltaje N-S:** Mide voltaje DC entre Neutro y Señal. Debe oscilar entre 20V y 70V DC.")
-                st.write("2. **Cableado:** Verifica que el cable de señal sea calibre 14 o 16 AWG, sin empalmes ni humedad.")
-                st.write("3. **Prueba de Tarjeta:** Si el voltaje es fijo (0V o 80V), la tarjeta emisora (Evaporador) está dañada.")
-            elif "e0" in q or "eeprom" in q:
-                st.error("### ✅ MIRAGE E0: ERROR DE EEPROM")
-                st.write("1. **Causa:** Desprogramación del chip de memoria en la placa.")
-                st.write("2. **Acción:** Apagar breaker 10 min. Si no borra, reemplazar tarjeta de evaporador.")
-            elif "e3" in q or "ventilador" in q:
-                st.warning("### ✅ MIRAGE E3: FALLA MOTOR EVAPORADOR")
-                st.write("1. **Giro:** Verifica si el rodamiento está pegado.")
-                st.write("2. **Sensor Hall:** Revisa el conector pequeño de 3 cables en la placa.")
+t1, t2, t3 = st.tabs(["🌡️ PRESIÓN / TEMPERATURA", "🔌 BOBINAS Y CAPACITORES", "🌡️ SENSORES kΩ"])
 
-        # --- SECCIÓN MIDEA ---
-        elif "midea" in q:
-            if "ec" in q or "fuga" in q:
-                st.error("### ✅ MIDEA EC: DETECCIÓN DE FUGA")
-                st.write("1. **Lógica:** El equipo detecta que el serpentín no enfría tras 10 min de marcha.")
-                st.write("2. **Aceite:** Busca manchas en las tuercas (flare) de la unidad exterior.")
-                st.write("3. **Presión:** R-410A debe estar entre 110-130 PSI. Si está bajo 80 PSI, busca el poro.")
-            elif "p4" in q or "ipm" in q:
-                st.error("### ✅ MIDEA P4: FALLA MÓDULO IPM")
-                st.write("1. **Compresor:** Mide que las 3 bornas no estén aterrizadas a tierra.")
-                st.write("2. **Pasta Térmica:** Revisa si el disipador de la placa exterior está seco.")
-
-        # --- SECCIÓN COMFORT FRESH ---
-        elif "comfort" in q:
-            if "e1" in q or "sensor" in q:
-                st.info("### ✅ COMFORT FRESH E1: SENSOR DE AIRE")
-                st.write("1. **Valor:** Sensor de 10kΩ. Medir resistencia desconectado.")
-                st.write("2. **Tabla:** A 25°C debe dar 10k. A 30°C debe dar 8k aprox.")
-            elif "e4" in q:
-                st.warning("### ✅ COMFORT FRESH E4: PROTECCIÓN DE SISTEMA")
-                st.write("1. **Causa:** Presión anormal o falta de gas. Revisar capacitor de ventilador exterior.")
-
-        # --- FALLAS DE COMPRESOR Y ELÉCTRICA ---
-        elif "compresor" in q or "capacitor" in q:
-            st.info("### ✅ DIAGNÓSTICO DE ARRANQUE")
-            st.write("1. **Capacitor:** Si el compresor zumba y no arranca, cambia el capacitor.")
-            st.write("2. **Relación Bobinas:** C a R (Baja), C a S (Media), R a S (Suma de ambas).")
-            st.write("3. **Amperaje:** Si el RLA supera el valor de placa, el compresor está sufriendo mecánicamente.")
-
-        else:
-            st.warning("⚠️ No encontré esa falla exacta. Intenta buscar por código (ej: E1, EC, E0).")
-
-# --- TABLAS TÉCNICAS (SIEMPRE VISIBLES) ---
-st.write("---")
-st.subheader("📊 INFORMACIÓN TÉCNICA DE REFERENCIA")
-col1, col2 = st.columns(2)
-
-with col1:
-    st.write("**Resistencia de Sensores (kΩ)**")
+with t1:
+    st.write("**Relación P/T para R-410A (Lecturas en Succión)**")
     st.table({
-        "Temperatura": ["20°C", "25°C", "30°C"],
-        "Sensor 10k": ["12.1", "10.0", "8.3"],
-        "Sensor 5k": ["6.1", "5.0", "4.1"]
+        "Temp. Exterior": ["25°C (77°F)", "30°C (86°F)", "35°C (95°F)", "40°C (104°F)"],
+        "Presión Baja (PSI)": ["110 - 118", "122 - 130", "135 - 145", "150 - 160"],
+        "Presión Alta (PSI)": ["310 - 330", "360 - 390", "420 - 460", "490 - 530"]
     })
 
-with col2:
-    st.write("**Presiones de Trabajo (PSI)**")
+with t2:
+    st.write("**Datos de Compresores On-Off**")
     st.table({
-        "Gas": ["R-22", "R-410A", "R-32"],
-        "Succión (Baja)": ["65", "120", "130"],
-        "Descarga (Alta)": ["250", "450", "480"]
+        "Capacidad": ["12,000 BTU", "18,000 BTU", "24,000 BTU", "36,000 BTU"],
+        "Capacitor": ["30 - 35 uF", "40 - 45 uF", "55 - 60 uF", "70 - 80 uF"],
+        "Amperaje RLA": ["5.5 A", "8.2 A", "11.0 A", "16.0 A"]
+    })
+
+with t3:
+    st.write("**Resistencia de Sensores (kΩ)**")
+    st.table({
+        "Temperatura": ["20°C", "25°C", "30°C", "35°C"],
+        "Sensor 10kΩ": ["12.1", "10.0", "8.3", "6.9"],
+        "Sensor 5kΩ": ["6.1", "5.0", "4.1", "3.4"]
     })
     
