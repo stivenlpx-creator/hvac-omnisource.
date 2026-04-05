@@ -1,103 +1,78 @@
 import streamlit as st
 
-# Configuración de página para entorno industrial
+# Configuración básica sin errores
 st.set_page_config(page_title="HVAC OMNISOURCE PRO", layout="wide")
 
-# CSS Avanzado para Botones Táctiles y Cajones de Información
-st.markdown("""
-    <style>
-    .stButton > button {
-        height: 5em;
-        width: 100%;
-        font-size: 22px !important;
-        font-weight: bold;
-        background-color: #004a99;
-        color: white;
-        border-radius: 15px;
-        margin-bottom: 10px;
-    }
-    .stTextInput > div > div > input {
-        font-size: 20px;
-        height: 3em;
-    }
-    .cajon-info {
-        background-color: #ffffff;
-        padding: 20px;
-        border-radius: 10px;
-        border-left: 10px solid #004a99;
-        box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
-    }
-    </style>
-    """, unsafe_content_allowed=True)
+st.title("🛠️ HVAC OMNISOURCE PRO")
+st.markdown("### Terminal de Diagnóstico Universal")
 
-st.title("🚀 HVAC OMNISOURCE: Terminal de Diagnóstico")
-
-# --- MOTOR DE BÚSQUEDA INTELIGENTE ---
-st.markdown("### 🔍 CONSULTA RÁPIDA (Falla o Código)")
-pregunta = st.text_input("Ejemplo: 'E1', 'sensor', 'compresor caliente', 'comunicación'", "").lower()
-
-# --- BASE DE DATOS ESTRUCTURADA ---
+# --- BASE DE DATOS EXPANDIDA ---
 base_datos = {
     "samsung": {
-        "e1": "FALLA: Sensor Ambiente. \n1. Medir sensor (10kΩ). \n2. Revisar conector en PCB. \n3. Reemplazar si el valor es ∞.",
-        "e5": "FALLA: Comunicación. \n1. Medir voltaje DC entre 2 y 3. \n2. Revisar cable de señal apantallado. \n3. Verificar tierra física.",
-        "compresor": "DIAGNÓSTICO: Si no arranca, medir IPM (U,V,W). Si se calienta, revisar carga de refrigerante."
+        "e1": "FALLA: Sensor Ambiente. Medir 10kΩ. Revisar conector.",
+        "e5": "FALLA: Comunicación. Revisar cable señal (L-N-S).",
+        "p4": "FALLA: Sobrecarga Compresor. Limpiar condensadora."
     },
     "lg": {
-        "ch01": "FALLA: Sensor aire interior. \n1. Revisar termistor. \n2. Limpiar contactos. \n3. Sustituir pieza.",
-        "ch05": "FALLA: Error de comunicación serie. \n1. Revisar fase y neutro invertidos. \n2. Comprobar continuidad cable de datos.",
-        "ruido": "DIAGNÓSTICO: Revisar rodamientos del motor blower o aspas del ventilador exterior."
+        "ch01": "FALLA: Sensor interior. Revisar termistor.",
+        "ch05": "FALLA: Error Comunicación. Revisar voltajes DC.",
+        "ch61": "FALLA: Alta temperatura. Limpiar serpentín."
+    },
+    "midea": {
+        "e1": "FALLA: Error comunicación unidades. Revisar cableado.",
+        "ec": "FALLA: Fuga de gas. El sensor detectó baja presión.",
+        "e3": "FALLA: Velocidad ventilador interior fuera de control."
+    },
+    "mirage": {
+        "e0": "FALLA: Error de parámetro en EEPROM (Placa dañada).",
+        "e1": "FALLA: Error de comunicación interior/exterior.",
+        "p4": "FALLA: Protección de temperatura del compresor."
+    },
+    "comfort fresh": {
+        "e1": "FALLA: Sensor de aire ambiente interior.",
+        "e2": "FALLA: Sensor de tubería (evaporador).",
+        "e4": "FALLA: Protección de alta presión o falta de refrigerante."
     },
     "carrier": {
-        "e1": "FALLA: Alta Presión. \n1. Limpiar condensador. \n2. Revisar capacitor del ventilador. \n3. Verificar presostato.",
-        "ec": "FALLA: Fuga detectada. \n1. Recuperar gas. \n2. Presurizar con nitrógeno a 350 PSI. \n3. Buscar pompas con jabón."
+        "e1": "FALLA: Alta presión. Limpiar filtros y ventilador.",
+        "e3": "FALLA: Baja presión. Posible fuga."
     }
 }
 
-# --- LÓGICA DE RESPUESTA ---
+# --- BUSCADOR ---
+st.info("Escribe el error o la marca abajo (Ejemplo: 'E1', 'Midea', 'Fuga')")
+pregunta = st.text_input("🔍 CONSULTA TÉCNICA:", "").lower()
+
 if pregunta:
     encontrado = False
     for marca, fallas in base_datos.items():
-        for clave, solucion in fallas.items():
-            if clave in pregunta:
-                st.markdown(f"<div class='cajon-info'><h3>✅ RESULTADO ({marca.upper()}):</h3><p style='font-size:18px;'>{solucion}</p></div>", unsafe_content_allowed=True)
+        if marca in pregunta:
+            st.write(f"### 📋 Listado rápido para {marca.upper()}:")
+            st.json(fallas)
+            encontrado = True
+        for cod, sol in fallas.items():
+            if cod in pregunta:
+                st.success(f"✅ {marca.upper()} - {cod.upper()}: {sol}")
                 encontrado = True
     if not encontrado:
-        st.warning("No hay una coincidencia exacta. Intenta con una sola palabra (ej: 'E1' o 'fuga').")
+        st.warning("No encontrado. Intenta con 'Mirage' o 'E1'.")
 
-# --- SEGMENTACIÓN POR MARCAS (CAJONES TÉCNICOS) ---
+# --- CAJONES DE DIAGNÓSTICO ---
 st.markdown("---")
-st.header("📂 MANUALES DE DIAGNÓSTICO POR MARCA")
-marca_sel = st.selectbox("Seleccione para ver guía técnica completa:", ["Seleccione...", "Samsung", "LG", "Carrier", "Daikin", "Trane"])
+st.header("📂 MANUALES RÁPIDOS")
+marca_sel = st.selectbox("Seleccione Marca:", ["Seleccione...", "Mirage", "Midea", "Comfort Fresh", "LG", "Samsung"])
 
 if marca_sel != "Seleccione...":
-    st.markdown(f"<div class='cajon-info'><h2>🛠️ Guía Paso a Paso: {marca_sel}</h2>", unsafe_content_allowed=True)
+    st.subheader(f"Guía de campo: {marca_sel}")
+    col1, col2 = st.columns(2)
     
-    col_a, col_b = st.columns(2)
-    with col_a:
-        st.write("### 1. Verificación Eléctrica")
-        st.write("- Medir voltaje de entrada (L-N).")
-        st.write("- Comprobar capacitores de marcha.")
+    with col1:
+        st.write("**Paso 1: Eléctrico**")
+        st.write("- Revisar capacitor y contactor.")
+        st.write("- Medir continuidad en bobinas C-R-S.")
         
-    
-    with col_b:
-        st.write("### 2. Ciclo Frigorífico")
-        st.write("- Presión Succión: 110-130 PSI (R410A).")
-        st.write("- Salto térmico ideal: 12°C a 15°C.")
+    with col2:
+        st.write("**Paso 2: Refrigeración**")
+        st.write("- Presión R410A: 110-140 PSI.")
+        st.write("- Presión R22: 60-75 PSI.")
         
-
-    st.write("### 3. Electrónica Avanzada")
-    st.write("Si el equipo es Inverter, verifique los LEDs de la placa exterior antes de manipular.")
-    
-    st.markdown("</div>", unsafe_content_allowed=True)
-
-# --- BOTONES DE HERRAMIENTAS RÁPIDAS ---
-st.markdown("### 🧰 HERRAMIENTAS")
-c1, c2 = st.columns(2)
-with c1:
-    if st.button("📊 TABLA PT (Presión-Temp)"):
-        st.table({"Refrigerante": ["R22", "R410A", "R134a"], "Baja (PSI)": ["65", "120", "30"], "Alta (PSI)": ["250", "450", "150"]})
-with c2:
-    if st.button("🚑 SOPORTE DE EMERGENCIA"):
-        st.error("LLAMANDO A INGENIERÍA... (Simulación)")
