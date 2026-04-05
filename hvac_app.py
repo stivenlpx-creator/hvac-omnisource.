@@ -9,31 +9,31 @@ API_KEY = "AIzaSyACIqPCfjD54WS-XahDvT4zMppQQRu2w0I"
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
-# 3. Interfaz Profesional
-st.markdown("<h1 style='text-align: center; color: #00e5ff;'>⚡ HVAC PRO DIAGNOSTIC ❄️</h1>", unsafe_content_allowed=True)
-st.write("---")
+# 3. Interfaz Limpia (Sin HTML para evitar errores)
+st.title("⚡ HVAC PRO DIAGNOSTIC ❄️")
+st.write("Soporte Técnico de Ingeniería - OMNISOURCE")
+st.divider()
 
 # BUSCADOR CENTRAL
-col1, col2, col3 = st.columns([1, 3, 1])
-with col2:
-    st.subheader("🔍 Buscador de Fallas con IA")
-    pregunta = st.text_input("Describa la falla:", placeholder="Ej: Compresor se va a vacío...")
-    if st.button("ANALIZAR CON IA", use_container_width=True):
-        if pregunta:
-            with st.spinner("🧠 Analizando..."):
-                try:
-                    res = model.generate_content(f"Eres experto HVAC. Pasos numerados para: {pregunta}")
-                    st.info(res.text)
-                except Exception as e:
-                    st.error(f"Error: {e}")
+st.header("🔍 Buscador de Fallas con IA")
+pregunta = st.text_input("Describe la falla del equipo:", placeholder="Ej: Compresor se va a vacío, error E1, capacitor seco...")
+
+if st.button("ANALIZAR CON IA", use_container_width=True):
+    if pregunta:
+        with st.spinner("🧠 IA Analizando parámetros..."):
+            try:
+                res = model.generate_content(f"Eres experto HVAC. Pasos numerados para: {pregunta}")
+                st.info(res.text)
+            except Exception as e:
+                st.error(f"Error de conexión: {e}")
 
 # PESTAÑAS DE HERRAMIENTAS
-st.write("---")
+st.divider()
 t1, t2, t3, t4 = st.tabs(["🧮 Cálculos", "🔌 Diagramas", "🌡️ Presión", "🛡️ Seguridad"])
 
 with t1:
-    st.subheader("Superheat / Subcooling")
-    c1, c2 = st.columns(2)
+    st.subheader("Cálculos de Superheat y Carga")
+    c1, col_espacio, c2 = st.columns([2, 1, 2])
     with c1:
         ts = st.number_input("Temp. Succión (°C)", value=12.0)
         pb = st.number_input("Presión Baja (PSI)", value=120.0)
@@ -47,15 +47,16 @@ with t1:
 
 with t2:
     st.subheader("Electricidad y Control")
-    st.write("Mida resistencia entre bornes para hallar C, R y S.")
-    st.write("C-R + C-S debe ser igual a R-S.")
+    st.write("1. **Identificación de bornes:** Mida resistencia entre los 3 bornes.")
+    st.write("2. **Motores PG:** Revisar sensor Hall (conector pequeño).")
 
 with t3:
     st.subheader("Consultas de Presión")
-    st.write("Use el buscador de arriba para consultar presiones de R-22, R-134a o R-404.")
-    st.info("💡 Tip: En R-410A, 120 PSI equivale a aprox. 4°C de saturación.")
+    st.info("💡 Tip: En R-410A, 118 PSI es ideal para una evaporación de 4.5°C.")
+    st.write("Consulte al buscador de IA arriba para refrigerantes específicos.")
 
 with t4:
-    st.subheader("Seguridad")
-    st.error("⚠️ Prohibido usar Oxígeno para presurizar.")
-    st.warning("⚠️ Use regulador de Nitrógeno siempre.")
+    st.subheader("Seguridad y Manejo Químico")
+    st.error("⚠️ Nunca use Oxígeno para presurizar (Riesgo de explosión).")
+    st.warning("⚠️ Use siempre gafas de seguridad y guantes.")
+    
