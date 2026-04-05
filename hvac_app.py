@@ -1,71 +1,95 @@
 import streamlit as st
 
 # 1. Configuración de Pantalla
-st.set_page_config(page_title="HVAC OMNISOURCE", layout="wide")
+st.set_page_config(page_title="HVAC OMNISOURCE PRO", layout="wide")
 
-# --- BARRA LATERAL (BIBLIOTECA) ---
-st.sidebar.title("📁 BIBLIOTECA TÉCNICA")
-modulo = st.sidebar.radio("IR A:", 
-    ["🔍 BUSCADOR DE FALLAS", "🔌 DATOS COMPRESORES", "🌀 MOTORES Y VENTILACIÓN", "🌡️ TABLA DE SENSORES"])
-
-st.sidebar.markdown("---")
-st.sidebar.write("**Capacitores Sugeridos:**")
-st.sidebar.code("12k BTU: 35uF\n18k BTU: 45uF\n24k BTU: 60uF")
-
-# --- ÁREA PRINCIPAL ---
-
-if modulo == "🔍 BUSCADOR DE FALLAS":
-    st.title("🔍 Asistente de Diagnóstico")
-    st.write("Escribe la falla, el código o la marca para obtener el paso a paso.")
-    
-    # BARRA DE BÚSQUEDA INTELIGENTE
-    busqueda = st.text_input("¿Qué problema tiene el equipo?", placeholder="Ej: Mirage E1, Midea fuga, Comfort Fresh sensor...")
-
-    if busqueda:
-        query = busqueda.lower()
-        
-        # LÓGICA DE RESPUESTAS PASO A PASO
-        if "mirage" in query and "e1" in query:
-            st.info("### 🛠️ PASO A PASO: MIRAGE E1 (Comunicación)")
-            st.write("1. **Corte Energía:** Apague el equipo 5 minutos para resetear memoria.")
-            st.write("2. **Verifique Cableado:** Revise que el cable de señal (S) no tenga empalmes.")
-            st.write("3. **Prueba de Voltaje:** Mida voltaje DC entre N y S. Debe oscilar entre 15V y 70V.")
-            st.write("4. **Veredicto:** Si el voltaje es fijo (0V o 80V), una de las tarjetas está dañada.")
-
-        elif "midea" in query and "ec" in query:
-            st.info("### 🛠️ PASO A PASO: MIDEA EC (Fuga de Gas)")
-            st.write("1. **Carga Térmica:** Verifique si el equipo enfría algo o nada.")
-            st.write("2. **Inspección:** Busque manchas de aceite en las tuercas de la unidad exterior.")
-            st.write("3. **Presurización:** Recupere el gas restante y meta 350 PSI de Nitrógeno.")
-            st.write("4. **Corrección:** Suelde la fuga, haga vacío profundo y cargue por peso.")
-
-        elif "sensor" in query or "e1" in query or "e2" in query:
-            st.info("### 🛠️ PASO A PASO: FALLA DE SENSORES")
-            st.write("1. **Desconecte:** Retire el sensor de la placa electrónica.")
-            st.write("2. **Mida Resistencia:** Use el multímetro en escala de kΩ.")
-            st.write("3. **Compare:** Revise la tabla de sensores (en el menú lateral) según la temperatura.")
-            st.write("4. **Sustituya:** Si el valor es 0 (corto) o infinito (abierto), cambie el sensor.")
-
-        else:
-            st.warning("⚠️ No encontré esa falla específica. Intenta escribir 'Marca + Código' (ej: Mirage E1).")
-
-elif modulo == "🔌 DATOS COMPRESORES":
-    st.title("🔌 Datos de Compresores y Bobinas")
-    st.subheader("Identificación de Bornes (C, R, S)")
-    st.write("Para identificar las bobinas si los cables están sueltos:")
-    st.write("1. **Mida los 3 bornes:** Encontrará 3 lecturas diferentes.")
-    st.write("2. **Lectura Mayor:** Es la suma de Marcha y Arranque (R + S).")
-    st.write("3. **Lectura Menor:** Es la bobina de Marcha (C a R).")
-    st.write("4. **Lectura Media:** Es la bobina de Arranque (C a S).")
-    st.image("https://iaq.com.au/wp-content/uploads/2019/04/Compressor-Terminals.jpg", caption="Identificación de terminales de compresor")
-
-elif modulo == "🌡️ TABLA DE SENSORES":
-    st.title("🌡️ Tabla de Valores de Sensores")
-    st.write("Valores de resistencia a temperatura ambiente:")
-    tabla_data = {
-        "Temp. Ambiente": ["15°C", "20°C", "25°C", "30°C"],
-        "Sensor 10kΩ": ["14.7 kΩ", "12.1 kΩ", "10.0 kΩ", "8.3 kΩ"],
-        "Sensor 5kΩ": ["7.3 kΩ", "6.0 kΩ", "5.0 kΩ", "4.1 kΩ"]
+# Estilo para el botón verde y diseño limpio
+st.markdown("""
+    <style>
+    div.stButton > button:first-child {
+        background-color: #28a745;
+        color: white;
+        height: 3em;
+        width: 100%;
+        font-size: 20px;
+        font-weight: bold;
+        border-radius: 10px;
+        border: none;
     }
-    st.table(tabla_data)
+    .stTextInput > div > div > input {
+        font-size: 18px;
+    }
+    </style>
+    """, unsafe_content_allowed=True)
+
+# --- CABECERA CON LOGO TEXTUAL HVAC ---
+st.markdown("<h1 style='text-align: center; color: #58a6ff;'>❄️ HVAC 🛠️</h1>", unsafe_content_allowed=True)
+st.markdown("<h3 style='text-align: center;'>Terminal de Diagnóstico y Fallas Pro</h3>", unsafe_content_allowed=True)
+
+# --- MOTOR DE BÚSQUEDA ---
+st.write("---")
+busqueda = st.text_input("Ingrese Marca, Código de Error o Síntoma:", placeholder="Ej: Mirage E1, Midea EC, Falla de compresor...")
+boton_buscar = st.button("BUSCAR DIAGNÓSTICO")
+
+if busqueda or boton_buscar:
+    query = busqueda.lower()
+    
+    # --- BASE DE DATOS PROFUNDA ---
+    
+    # 1. MIRAGE
+    if "mirage" in query:
+        if "e1" in query or "comunicacion" in query:
+            st.success("### ✅ DIAGNÓSTICO: MIRAGE E1 - ERROR DE COMUNICACIÓN")
+            st.write("1. **Reset Eléctrico:** Desconecta el equipo 5 minutos.")
+            st.write("2. **Cables de Señal:** Revisa el borne 'S' o '3' en ambas unidades. El cable debe ser continuo, sin empalmes.")
+            st.write("3. **Prueba de Voltaje:** Con el equipo encendido, mide Voltaje DC entre el Neutro (N) y la Señal (S). Debe variar (oscilar) entre 15V y 70V DC.")
+            st.write("4. **Veredicto:** Si el voltaje es fijo en 0V o 80V, la placa del evaporador o condensador está dañada.")
+            st.image("https://iaq.com.au/wp-content/uploads/2019/04/Compressor-Terminals.jpg", caption="Verifique bornes de señal")
+            
+        elif "e0" in query or "eeprom" in query:
+            st.error("### ✅ DIAGNÓSTICO: MIRAGE E0 - ERROR DE PARÁMETRO EEPROM")
+            st.write("1. **Causa:** La memoria de la placa principal perdió su programación.")
+            st.write("2. **Acción:** Apagar el interruptor principal (breaker) por 10 minutos.")
+            st.write("3. **Revisión:** Verificar que no haya humedad o sulfatación en la placa.")
+            st.write("4. **Solución:** Si el error persiste, se debe reemplazar la tarjeta electrónica del evaporador.")
+
+    # 2. MIDEA
+    elif "midea" in query:
+        if "ec" in query or "fuga" in query:
+            st.warning("### ✅ DIAGNÓSTICO: MIDEA EC - FUGA DE REFRIGERANTE")
+            st.write("1. **Detección:** El sensor de tubería detectó una temperatura anormal por falta de gas.")
+            st.write("2. **Búsqueda:** Revisa las tuercas de conexión (flare). Busca rastros de aceite.")
+            st.write("3. **Prueba de Presión:** Si la presión es menor a 100 PSI (R410A), hay fuga.")
+            st.write("4. **Solución:** Presuriza con Nitrógeno a 350 PSI para hallar el poro, suelda, haz vacío y carga por peso.")
+            st.image("https://iaq.com.au/wp-content/uploads/2019/04/Refrigeration-Cycle.jpg", caption="Puntos de inspección de fuga")
+
+    # 3. COMFORT FRESH
+    elif "comfort" in query or "fresh" in query:
+        if "e1" in query or "sensor" in query:
+            st.info("### ✅ DIAGNÓSTICO: COMFORT FRESH E1 - SENSOR DE AIRE")
+            st.write("1. **Medición:** Desconecta el sensor de la placa.")
+            st.write("2. **Valor:** Debe medir 10 kΩ a una temperatura de 25°C.")
+            st.write("3. **Prueba:** Si mide 0Ω (corto) o infinito (abierto), está dañado.")
+            st.write("4. **Sustitución:** Reemplaza por un sensor original de 10k.")
+
+    # 4. FALLAS GENÉRICAS (COMPRESOR / VENTILADOR)
+    elif "compresor" in query:
+        st.info("### 🛠️ DIAGNÓSTICO: EL COMPRESOR NO ARRANCA")
+        st.write("1. **Capacitor:** Verifica si el capacitor de marcha está inflado o desvalorizado.")
+        st.write("2. **Bobinas:** Mide continuidad entre C, R y S. (R a S debe ser la suma de C-R + C-S).")
+        st.write("3. **Térmico:** Verifica que el protector térmico no esté abierto por exceso de calor.")
+        st.write("4. **Inverter:** Si es Inverter, mide la impedancia entre las fases U-V-W. Deben ser idénticas.")
+
+    else:
+        st.warning("⚠️ No se encontró la falla exacta. Intenta con: 'Mirage E1', 'Midea EC', 'Compresor caliente'.")
+
+# --- TABLAS DE APOYO VISUAL FIJAS ---
+st.write("---")
+with st.expander("📊 TABLA DE REFERENCIA DE SENSORES (kΩ)"):
+    st.write("Valores para Mirage, Midea y Comfort Fresh:")
+    st.table({
+        "Temperatura": ["15°C", "20°C", "25°C", "30°C"],
+        "Sensor 10kΩ": ["14.7 kΩ", "12.1 kΩ", "10.0 kΩ", "8.3 kΩ"],
+        "Sensor 5kΩ": ["7.3 kΩ", "6.1 kΩ", "5.0 kΩ", "4.1 kΩ"]
+    })
     
