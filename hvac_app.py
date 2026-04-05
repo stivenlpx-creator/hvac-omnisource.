@@ -1,59 +1,45 @@
 import streamlit as st
+import google.generativeai as genai
 
-# 1. Configuración de Pantalla
-st.set_page_config(page_title="HVAC AI OMNISOURCE", layout="wide")
+# Configuración de la App
+st.set_page_config(page_title="HVAC OMNISOURCE AI", layout="wide")
 
-st.title("🤖 HVAC AI: ASISTENTE EXPERTO")
-st.write("Consulta fallas de Mirage, Midea, Comfort Fresh y Sistemas Centrales")
+# CONFIGURACIÓN DE LA IA (Pega aquí tu llave cuando la tengas)
+API_KEY = "AIzaSyACIqPCfjD54WS-XahDvT4zMppQQRu2w0I" 
 
-# 2. Entrada de lenguaje natural
+if API_KEY != "AIzaSyACIqPCfjD54WS-XahDvT4zMppQQRu2w0I":
+    genai.configure(api_key=API_KEY)
+    model = genai.GenerativeModel('gemini-pro')
+
+st.title("🤖 ASISTENTE HVAC CON IA")
+st.write("Consulta cualquier falla, tabla o procedimiento técnico.")
+
+# Barra de chat
+user_input = st.text_input("Describe el problema del equipo (ej: 'El compresor calienta pero no arranca'):")
+
+if st.button("PREGUNTAR A LA IA"):
+    if API_KEY == "AIzaSyACIqPCfjD54WS-XahDvT4zMppQQRu2w0I":
+        st.error("⚠️ Error: Debes pegar tu API KEY en el código para que la IA funcione.")
+    elif user_input:
+        with st.spinner("La IA está analizando la falla..."):
+            try:
+                # Instrucción maestra para la IA
+                contexto = f"Actúa como un ingeniero experto en refrigeración y HVAC. Responde de forma técnica pero fácil de entender, con pasos numerados (1, 2, 3). El técnico pregunta: {user_input}"
+                response = model.generate_content(contexto)
+                
+                st.markdown("### 🛠️ Diagnóstico Sugerido:")
+                st.write(response.text)
+            except Exception as e:
+                st.error(f"Hubo un error con la IA: {e}")
+    else:
+        st.warning("Escribe algo para poder ayudarte.")
+
+# Tablas de apoyo fijas (por si no hay internet estable)
 st.write("---")
-pregunta = st.text_input("¿Qué está pasando con el equipo?", placeholder="Ej: 'El compresor se calienta y se apaga' o 'Error E1'")
-
-if st.button("🧠 ANALIZAR FALLA"):
-    if pregunta:
-        p = pregunta.lower()
-        
-        # --- LÓGICA DE IA POR SÍNTOMAS ---
-
-        if "agua" in p or "gotea" in p or "tira" in p:
-            st.info("### 💧 DIAGNÓSTICO: DRENAJE OBSTRUIDO / CONGELAMIENTO")
-            st.write("1. **Nivel:** Verifique que el evaporador tenga una ligera inclinación hacia el desagüe.")
-            st.write("2. **Limpieza:** Sople la manguera de drenaje; suele acumular biopelícula (lodo).")
-            st.write("3. **Falta de Gas:** Si el serpentín tiene hielo, el agua no cae a la bandeja. Revise presiones.")
-
-        elif "vacio" in p or "succion baja" in p:
-            st.error("### 📉 DIAGNÓSTICO: OBSTRUCCIÓN EN EL CICLO")
-            st.write("1. **VXT/Capilar:** Si se va a vacío, hay un tapón mecánico o humedad congelada.")
-            st.write("2. **Filtro:** Toque el filtro deshidratador. Si hay diferencia de temperatura entre entrada y salida, está tapado.")
-            st.write("3. **Procedimiento:** Recupere gas, limpie con 141b/Nitrógeno y cambie el elemento de expansión.")
-
-        elif "no enfría" in p or "poco frio" in p:
-            st.warning("### 🌡️ DIAGNÓSTICO: BAJO RENDIMIENTO TÉRMICO")
-            st.write("1. **Capacitor de Fan:** Si el ventilador exterior gira lento, el calor no sale y el compresor no rinde.")
-            st.write("2. **Compresor:** Si las presiones están igualadas (ej. 150 PSI en alta y baja) con el equipo prendido, las válvulas del compresor fallaron.")
-            st.write("3. **Sensores:** Un sensor desvalorizado puede hacer que el equipo corte por 'congelamiento' falso.")
-
-        elif "e1" in p or "comunicacion" in p:
-            st.error("### 📡 DIAGNÓSTICO: ERROR DE COMUNICACIÓN (E1/CH05)")
-            st.write("1. **Voltaje S-N:** Mida voltaje DC. Debe ser errático (saltando entre 20V y 70V).")
-            st.write("2. **Borneras:** El 90% de las veces es un cable sulfatado o flojo en la unidad exterior.")
-
-        elif "no arranca" in p or "zumba" in p:
-            st.error("### ⚡ DIAGNÓSTICO: FALLA ELÉCTRICA DE ARRANQUE")
-            st.write("1. **Capacitor de Marcha:** Mida capacitancia. Si está seco, el motor solo vibrará.")
-            st.write("2. **Bobinas:** Verifique C-R-S. Si alguna borna da 'OL', el compresor está abierto.")
-
-        else:
-            st.warning("No estoy seguro. Intenta ser más específico o escribe el código de error.")
-
-# --- TABLAS TÉCNICAS PARA LA IA ---
-st.write("---")
-with st.expander("📊 BASES DE DATOS DE INGENIERÍA"):
-    col1, col2 = st.columns(2)
-    with col1:
-        st.write("**Relación Presión/Temperatura (R-410A)**")
-        st.table({"Ambiente": ["25°C", "35°C", "45°C"], "Baja (PSI)": ["115", "138", "165"]})
-    with col2:
-        st.write("**Resistencia Sensores kΩ**")
-        st.table({"Temp": ["20°C", "25°C", "30°C"], "10k": ["12.1", "10.0", "8.3"]})
+with st.expander("📊 TABLAS DE REFERENCIA RÁPIDA"):
+    st.table({
+        "R-410A Temp": ["25°C", "35°C", "45°C"],
+        "Presión Baja (PSI)": ["118", "142", "168"],
+        "Sensor 10kΩ": ["12.1k", "10.0k", "8.3k"]
+    })
+    
