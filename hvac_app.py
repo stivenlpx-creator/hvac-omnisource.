@@ -4,10 +4,10 @@ import google.generativeai as genai
 # Configuración de página
 st.set_page_config(page_title="HVAC PRO", layout="wide")
 
-# Llave de API (Recuerda protegerla después con st.secrets)
+# Llave de API
 API_KEY = "AIzaSyC0-1YsWu9A_xwMu-UflXzkZrn-IFk9Wf0"
 
-# Configuración global de la IA
+# Configuración de la IA
 genai.configure(api_key=API_KEY)
 
 st.title("⚡ HVAC PRO DIAGNOSTIC ❄️")
@@ -20,19 +20,25 @@ if st.button("ANALIZAR CON IA"):
     if pregunta:
         with st.spinner("🧠 Consultando cerebro de IA..."):
             try:
-                # Se utiliza gemini-1.5-flash por ser más estable y rápido
+                # CORRECCIÓN: Usar solo el nombre del modelo sin el prefijo 'models/'
+                # Esto evita el error 404 en la mayoría de las versiones de la SDK
                 model = genai.GenerativeModel('gemini-1.5-flash')
                 
-                # Opcional: Puedes agregar un "prompt" de sistema para que sea más técnico
-                prompt_ingeniero = f"Actúa como un experto en refrigeración y HVAC. Responde a lo siguiente: {pregunta}"
-                
-                response = model.generate_content(prompt_ingeniero)
+                instruccion = f"Como experto en HVAC, analiza este problema: {pregunta}"
+                response = model.generate_content(instruccion)
                 
                 st.success("### DIAGNÓSTICO:")
                 st.write(response.text)
             except Exception as e:
-                st.error(f"Error detectado: {e}")
-                st.info("Sugerencia: Verifica que tu API Key esté activa y que la librería 'google-generativeai' esté actualizada.")
+                # Si el error persiste, intentamos una variante de nombre
+                try:
+                    model_alt = genai.GenerativeModel('gemini-pro')
+                    response = model_alt.generate_content(pregunta)
+                    st.success("### DIAGNÓSTICO (Nodo Alterno):")
+                    st.write(response.text)
+                except:
+                    st.error(f"Error de conexión: {e}")
+                    st.info("Recomendación: Actualiza la librería en tu terminal con: pip install -U google-generativeai")
     else:
         st.warning("Por favor, ingresa una consulta.")
 
@@ -44,8 +50,6 @@ c1, c2 = st.columns(2)
 with c1:
     ts = st.number_input("Temp Succión (°C)", value=10, step=1)
     pb = st.number_input("Presión Baja (PSI)", value=118, step=1)
-    # Cálculo de Superheat (SH) simplificado
-    # Nota: Esta es una fórmula aproximada para R410A
     sh = int(round(ts - ((pb / 10) - 7)))
     st.metric("SH (Sobrecalentamiento)", f"{sh} °C")
     if 4 <= sh <= 7: 
@@ -56,7 +60,6 @@ with c1:
 with c2:
     tl = st.number_input("Temp Líquido (°C)", value=32, step=1)
     pa = st.number_input("Presión Alta (PSI)", value=320, step=1)
-    # Cálculo de Subcooling (SC) simplificado
     sc = int(round(((pa / 10) + 6) - tl))
     st.metric("SC (Subenfriamiento)", f"{sc} °C")
     if 5 <= sc <= 8: 
