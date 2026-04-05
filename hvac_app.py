@@ -4,35 +4,41 @@ import google.generativeai as genai
 # 1. Configuración de la App
 st.set_page_config(page_title="HVAC Pro Diagnostic", layout="wide")
 
-# 2. IA con tu nueva Key (Conexión Estabilizada)
-API_KEY = "AIzaSyDlyLW--Tan3ObFrPurB-ycI-3hf_Mx00I"
+# 2. Configuración de la IA (Nueva Llave Aplicada)
+API_KEY = "AIzaSyC0-1YsWu9A_xwMu-UflXzkZrn-IFk9Wf0"
 
 try:
     genai.configure(api_key=API_KEY)
-    # Usamos la ruta completa del modelo para evitar el error 404
-    model = genai.GenerativeModel('models/gemini-1.5-flash')
+    # Usamos la configuración de modelo estándar para Gemini 1.5 Flash
+    model = genai.GenerativeModel('gemini-1.5-flash')
 except Exception as e:
     st.error(f"Error de configuración: {e}")
 
-# 3. Interfaz Principal
+# 3. Interfaz Profesional
 st.title("⚡ HVAC PRO DIAGNOSTIC ❄️")
 st.write("Soporte Técnico de Ingeniería - OMNISOURCE")
 st.divider()
 
-# BUSCADOR
+# BUSCADOR CENTRAL CON IA
 st.header("🔍 Asistente Técnico IA")
-pregunta = st.text_input("Consulta técnica:", placeholder="Ej: Pasos para diagnosticar falla de vacío...")
+pregunta = st.text_input("Consulta técnica:", placeholder="Ej: ¿Cómo diagnosticar una obstrucción en el capilar?")
 
 if st.button("ANALIZAR CON IA", use_container_width=True):
     if pregunta:
-        with st.spinner("🧠 Analizando parámetros técnicos..."):
+        with st.spinner("🧠 Conectando con el cerebro de ingeniería..."):
             try:
-                res = model.generate_content(f"Eres experto HVAC Senior. Da diagnóstico paso a paso para: {pregunta}")
-                st.info(res.text)
+                # Prompt directo para respuesta técnica
+                response = model.generate_content(f"Eres un experto Ingeniero HVAC. Da diagnóstico técnico paso a paso para: {pregunta}")
+                if response.text:
+                    st.success("### 🛠️ DIAGNÓSTICO SUGERIDO:")
+                    st.markdown(response.text)
+                else:
+                    st.warning("No se recibió respuesta. Intenta reformular la pregunta.")
             except Exception as e:
-                st.error(f"Error de conexión con IA: {str(e)}")
+                st.error("⚠️ Error de API: Es posible que la llave necesite unos minutos para activarse en el servidor de Google.")
+                st.write(f"Detalle técnico: {e}")
 
-# PESTAÑAS (Calculadoras con Tips de Eficiencia)
+# PESTAÑAS DE HERRAMIENTAS
 st.divider()
 t1, t2, t3 = st.tabs(["🧮 Cálculos de Eficiencia", "🌡️ Enciclopedia de Gases", "🛡️ Seguridad"])
 
@@ -41,25 +47,27 @@ with t1:
     c1, c2 = st.columns(2)
     with c1:
         st.write("**Sobrecalentamiento (Superheat)**")
-        ts = st.number_input("Temp Succión (°C)", value=10, step=1, key="ts_vfinal")
-        pb = st.number_input("Presión Baja (PSI)", value=118, step=1, key="pb_vfinal")
+        ts = st.number_input("Temp Succión (°C)", value=10, step=1, key="ts_final")
+        pb = st.number_input("Presión Baja (PSI)", value=118, step=1, key="pb_final")
+        # Cálculo SH (R410A aprox)
         sh = int(round(ts - ((pb / 10) - 7)))
         st.metric("SH", f"{sh} °C")
         if 4 <= sh <= 7:
             st.success("✅ Eficiente (Ideal: 4 a 7 °C)")
         else:
-            st.warning("⚠️ Fuera de rango óptimo")
+            st.warning("⚠️ Fuera de rango óptimo (Ajustar carga)")
 
     with c2:
         st.write("**Subenfriamiento (Subcooling)**")
-        tl = st.number_input("Temp Líquido (°C)", value=32, step=1, key="tl_vfinal")
-        pa = st.number_input("Presión Alta (PSI)", value=320, step=1, key="pa_vfinal")
+        tl = st.number_input("Temp Líquido (°C)", value=32, step=1, key="tl_final")
+        pa = st.number_input("Presión Alta (PSI)", value=320, step=1, key="pa_final")
+        # Cálculo SC (R410A aprox)
         sc = int(round(((pa / 10) + 6) - tl))
         st.metric("SC", f"{sc} °C")
         if 5 <= sc <= 8:
             st.success("✅ Eficiente (Ideal: 5 a 8 °C)")
         else:
-            st.warning("⚠️ Fuera de rango óptimo")
+            st.warning("⚠️ Fuera de rango óptimo (Revisar condensación)")
 
 with t2:
     st.subheader("Buscador de Refrigerantes y Tips")
@@ -69,7 +77,7 @@ with t2:
     elif gas == "R-32": st.error("**Tips R-32:** Inflamable A2L. Succión: 120-155 PSI. Carga líquida.")
     elif gas == "R-134a": st.success("**Tips R-134a:** Automotriz/Comercial. Succión: 20-35 PSI.")
     elif gas == "R-404A": st.write("**Tips R-404A:** Baja temp. Carga LÍQUIDO. Succión: 15-60 PSI.")
-    elif gas == "R-407C": st.info("**Tips R-407C:** Reemplazo R-22. Carga LÍQUIDO. Glide alto.")
+    elif gas == "R-407C": st.info("**Tips R-407C:** Reemplazo R-22. Carga LÍQUIDO. Glide térmico alto.")
     elif gas == "R-507": st.write("**Tips R-507:** Congelación. Carga LÍQUIDO. Azeotrópico.")
     elif gas == "R-600a": st.error("**Tips R-600a:** Isobutano. Inflamable. Carga por peso exacto.")
     elif gas == "R-290": st.error("**Tips R-290:** Propano. Alta eficiencia. Muy inflamable.")
