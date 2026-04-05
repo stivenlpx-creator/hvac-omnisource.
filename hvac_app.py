@@ -66,3 +66,5 @@ with c2:
         st.success("✅ Eficiente")
     else: 
         st.warning("⚠️ Revisar Condensación")
+ctrl+c
+Python -m pip install -U google-generativeai
