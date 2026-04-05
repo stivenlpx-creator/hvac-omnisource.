@@ -1,78 +1,90 @@
 import streamlit as st
 
-# Configuración básica sin errores
-st.set_page_config(page_title="HVAC OMNISOURCE PRO", layout="wide")
+# Configuración Pro
+st.set_page_config(page_title="HVAC OMNISOURCE ELITE", layout="wide")
 
-st.title("🛠️ HVAC OMNISOURCE PRO")
-st.markdown("### Terminal de Diagnóstico Universal")
+# CSS para que se vea como una App nativa y profesional
+st.markdown("""
+    <style>
+    .main { background-color: #0d1117; color: white; }
+    .stButton>button {
+        height: 4em; font-size: 18px; font-weight: bold;
+        background-color: #1f6feb; color: white; border-radius: 10px;
+    }
+    .stTextInput>div>div>input { font-size: 20px; background-color: #161b22; color: white; }
+    .status-box {
+        padding: 20px; border-radius: 10px; border-left: 8px solid #238636;
+        background-color: #161b22; margin-bottom: 15px;
+    }
+    </style>
+    """, unsafe_content_allowed=True)
 
-# --- BASE DE DATOS EXPANDIDA ---
-base_datos = {
-    "samsung": {
-        "e1": "FALLA: Sensor Ambiente. Medir 10kΩ. Revisar conector.",
-        "e5": "FALLA: Comunicación. Revisar cable señal (L-N-S).",
-        "p4": "FALLA: Sobrecarga Compresor. Limpiar condensadora."
-    },
-    "lg": {
-        "ch01": "FALLA: Sensor interior. Revisar termistor.",
-        "ch05": "FALLA: Error Comunicación. Revisar voltajes DC.",
-        "ch61": "FALLA: Alta temperatura. Limpiar serpentín."
+st.title("❄️ HVAC OMNISOURCE ELITE v3.0")
+st.subheader("Manual Maestro de Diagnóstico y Reparación")
+
+# --- BASE DE DATOS MAESTRA ---
+db = {
+    "mirage": {
+        "e0": "ERROR PARAMETRO EEPROM: La memoria de la placa se desprogramó. Intentar reset (5 min apagado) o cambiar PCB.",
+        "e1": "ERROR COMUNICACIÓN: Revisar cable de señal (S). Medir voltaje DC entre S y N (debe oscilar).",
+        "e3": "FAN INTERIOR: Motor bloqueado o sensor Hall dañado.",
+        "p4": "COMPRESOR: Alta temperatura. Revisar capacitor de ventilador exterior o suciedad extrema."
     },
     "midea": {
-        "e1": "FALLA: Error comunicación unidades. Revisar cableado.",
-        "ec": "FALLA: Fuga de gas. El sensor detectó baja presión.",
-        "e3": "FALLA: Velocidad ventilador interior fuera de control."
-    },
-    "mirage": {
-        "e0": "FALLA: Error de parámetro en EEPROM (Placa dañada).",
-        "e1": "FALLA: Error de comunicación interior/exterior.",
-        "p4": "FALLA: Protección de temperatura del compresor."
+        "ec": "DETECCIÓN FUGA: El equipo detectó falta de refrigerante por temperatura de tubería. ¡No recargar sin buscar fuga!",
+        "e1": "COMUNICACIÓN: Error de datos entre tarjetas. Revisar cableado y bornes sulfatados.",
+        "p0": "PROTECCIÓN IPM: Corto circuito en compresor o falla en el módulo de potencia de la placa."
     },
     "comfort fresh": {
-        "e1": "FALLA: Sensor de aire ambiente interior.",
-        "e2": "FALLA: Sensor de tubería (evaporador).",
-        "e4": "FALLA: Protección de alta presión o falta de refrigerante."
-    },
-    "carrier": {
-        "e1": "FALLA: Alta presión. Limpiar filtros y ventilador.",
-        "e3": "FALLA: Baja presión. Posible fuga."
+        "e1": "SENSOR AMBIENTE: Sensor de aire abierto o en corto (Medir 10kΩ).",
+        "e2": "SENSOR TUBERÍA: Sensor de pozo dañado (Medir 10kΩ o 5kΩ según modelo).",
+        "e4": "PROTECCIÓN SISTEMA: Presión anormal o falta de refrigerante."
     }
 }
 
-# --- BUSCADOR ---
-st.info("Escribe el error o la marca abajo (Ejemplo: 'E1', 'Midea', 'Fuga')")
-pregunta = st.text_input("🔍 CONSULTA TÉCNICA:", "").lower()
+# --- BUSCADOR POR SÍNTOMA ---
+st.markdown("### 🔍 Buscador de Soluciones")
+query = st.text_input("Escribe el error o síntoma (ej: 'Mirage E1' o 'Fuga')").lower()
 
-if pregunta:
-    encontrado = False
-    for marca, fallas in base_datos.items():
-        if marca in pregunta:
-            st.write(f"### 📋 Listado rápido para {marca.upper()}:")
-            st.json(fallas)
-            encontrado = True
-        for cod, sol in fallas.items():
-            if cod in pregunta:
-                st.success(f"✅ {marca.upper()} - {cod.upper()}: {sol}")
-                encontrado = True
-    if not encontrado:
-        st.warning("No encontrado. Intenta con 'Mirage' o 'E1'.")
+if query:
+    match = False
+    for marca in db:
+        if marca in query:
+            for cod, sol in db[marca].items():
+                if cod in query:
+                    st.markdown(f"<div class='status-box'><b>✅ {marca.upper()} - {cod.upper()}:</b><br>{sol}</div>", unsafe_content_allowed=True)
+                    match = True
+    if not match:
+        st.warning("Sin coincidencia exacta. Prueba solo con el código (ej: 'E1').")
 
-# --- CAJONES DE DIAGNÓSTICO ---
+# --- SECCIONES DE INGENIERÍA ---
 st.markdown("---")
-st.header("📂 MANUALES RÁPIDOS")
-marca_sel = st.selectbox("Seleccione Marca:", ["Seleccione...", "Mirage", "Midea", "Comfort Fresh", "LG", "Samsung"])
+tab1, tab2, tab3 = st.tabs(["📊 TABLA DE SENSORES", "⚡ DIAGRAMAS", "🧪 PRESIONES"])
 
-if marca_sel != "Seleccione...":
-    st.subheader(f"Guía de campo: {marca_sel}")
-    col1, col2 = st.columns(2)
+with tab1:
+    st.write("### Valores de Resistencia (kΩ) vs Temperatura")
+    st.table({
+        "Temp (°C)": ["15°C", "20°C", "25°C", "30°C"],
+        "Sensor 5k": ["7.3", "6.0", "5.0", "4.1"],
+        "Sensor 10k": ["14.6", "12.0", "10.0", "8.2"],
+        "Sensor 15k": ["22.0", "18.1", "15.0", "12.4"]
+    })
+
+with tab2:
+    st.write("### Identificación de Componentes")
+    opcion = st.selectbox("Diagrama:", ["Compresor Monofásico", "Placa Inverter", "Ciclo de Gas"])
     
-    with col1:
-        st.write("**Paso 1: Eléctrico**")
-        st.write("- Revisar capacitor y contactor.")
-        st.write("- Medir continuidad en bobinas C-R-S.")
-        
-    with col2:
-        st.write("**Paso 2: Refrigeración**")
-        st.write("- Presión R410A: 110-140 PSI.")
-        st.write("- Presión R22: 60-75 PSI.")
-        
+    if "Monofásico" in opcion:
+        st.image("https://images.tcdn.com.br/img/editor/up/632121/Esquema_Eletrico_Ar_Condicionado.jpg")
+        st.info("Mide Continuidad: C-R + C-S = R-S. Si no da exacto, bobina abierta.")
+    elif "Inverter" in opcion:
+        st.write("Puntos de prueba IPM: Mide resistencia entre U-V, V-W, W-U (deben ser idénticas).")
+
+with tab3:
+    st.write("### Carga de Gas por Presión (Guía Rápida)")
+    st.table({
+        "Gas": ["R-22", "R-410A", "R-32"],
+        "Succión (PSI)": ["60 - 75", "110 - 130", "120 - 140"],
+        "Líquido (PSI)": ["250 - 300", "450 - 500", "480 - 550"]
+    })
+    
